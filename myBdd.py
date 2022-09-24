@@ -45,10 +45,25 @@ class BDD:
         self.BDDNODEONE = BDDNode.getNodeOne(exp.numVars)
         self.NODES[self.BDDNODEONE.getKey()] = self.BDDNODEONE
 
-        self.node = self._buildBDD()
+        self.node = self.buildBDD()
 
-    def _buildBDD(self):
-        return buildBDD(self.exp,self.ordering,self.NODES)
+    def buildBDD(self):
+        return buildBDD(self.exp, self.ordering, self.NODES)
+
+    def dfsPreorder(self):
+        visited = list()
+        _dfsPre(self.node, visited)
+        return visited
+
+    def dfsPostorder(self):
+        visited = list()
+        _dfsPost(self.node, visited)
+        return visited
+
+    def bfs(self):
+        visited = list()
+        _bfs(self.node, visited)
+        return visited
 
 
 def buildBDD(exp, ordering, cache):
@@ -58,13 +73,13 @@ def buildBDD(exp, ordering, cache):
         return cache[BDDNode.BDDNODEONEKEY]
     for idx, var in enumerate(ordering):
         if exp.isPresent(var):
-            return bddNode(exp, ordering[idx:])
+            return bddNode(exp, ordering, cache, idx)
 
     raise ValueError("invalid ordering list")
 
 
-def bddNode(exp, ordering, cache):
-    var = ordering[0]
+def bddNode(exp, ordering, cache, idx):
+    var = ordering[idx]
     lo = exp.negativeCofactor(var)
     hi = exp.positiveCofactor(var)
     if lo is hi:
@@ -79,3 +94,40 @@ def bddNode(exp, ordering, cache):
             node.hi = buildBDD(hi, ordering, cache)
             cache[key] = node
     return node
+
+
+def _dfsPre(node, visited):
+    """Iterate through nodes in DFS pre-order."""
+    if node not in visited:
+        visited.add(node)
+        yield node
+    if node.lo is not None:
+        yield from _dfsPre(node.lo, visited)
+    if node.hi is not None:
+        yield from _dfsPre(node.hi, visited)
+
+
+def _dfsPost(node, visited):
+    """Iterate through nodes in DFS post-order."""
+    if node.lo is not None:
+        yield from _dfsPost(node.lo, visited)
+    if node.hi is not None:
+        yield from _dfsPost(node.hi, visited)
+    if node not in visited:
+        visited.add(node)
+        yield node
+
+
+def _bfs(node, visited):
+    """Iterate through nodes in BFS order."""
+    queue = collections.deque()
+    queue.appendleft(node)
+    while queue:
+        node = queue.pop()
+        if node not in visited:
+            if node.lo is not None:
+                queue.appendleft(node.lo)
+            if node.hi is not None:
+                queue.appendleft(node.hi)
+            visited.add(node)
+            yield node
