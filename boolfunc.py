@@ -22,7 +22,7 @@ class Expression:
     def isPresent(self, x):
         for c in self.cubes:
             for l in c:
-                if l == x:
+                if abs(l) == x:
                     return True
         return False
 
