@@ -51,19 +51,16 @@ class BDD:
         return buildBDD(self.exp, self.ordering, self.NODES)
 
     def dfsPreorder(self):
-        visited = list()
-        _dfsPre(self.node, visited)
-        return visited
+        visited = set()
+        return _dfsPre(self.node, visited)
 
     def dfsPostorder(self):
-        visited = list()
-        _dfsPost(self.node, visited)
-        return visited
+        visited = set()
+        return _dfsPost(self.node, visited)
 
     def bfs(self):
-        visited = list()
-        _bfs(self.node, visited)
-        return visited
+        visited = set()
+        return _bfs(self.node, visited)
 
 
 def buildBDD(exp, ordering, cache):
