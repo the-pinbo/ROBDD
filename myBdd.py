@@ -82,8 +82,9 @@ def bddNode(exp, ordering, cache, idx):
     var = ordering[idx]
     lo = exp.negativeCofactor(var)
     hi = exp.positiveCofactor(var)
-    if lo is hi:
-        node = lo
+    if lo.cubes == hi.cubes:
+        exp = lo
+        node = buildBDD(exp, ordering, cache)
     else:
         key = (var, lo, hi)
         try:
