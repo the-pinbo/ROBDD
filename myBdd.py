@@ -47,7 +47,13 @@ class BDDNode:
         return self.__str__()
 
     def getLabel(self):
-        label = f"var->{self.var}\nid->{id(self)}\nlo->{id(self.lo)}    hi->{id(self.hi)}"
+        # _label = f"var->{self.var}\nid->{id(self)}\nlo->{id(self.lo)}    hi->{id(self.hi)}"
+        if self.var == -1:
+            label = "0" 
+        elif self.var == -2:
+            label = "1"
+        else:
+            label = f"X{self.var}" 
         return label
 
 
