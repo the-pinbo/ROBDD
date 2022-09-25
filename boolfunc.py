@@ -1,9 +1,19 @@
+# Class for boolean functions which can be used to generate expressions
 import pcn
 import urp
 
 
 class Expression:
     def __init__(self, filePath=None, cubes=None, numVars=None) -> None:
+        """Initializes the expression from a file or from cubes and numVars
+
+        Args:
+            filePath (str, optional): Path to the file. Defaults to None.
+            cubes (list, optional): List of cubes. Defaults to None.
+            numVars (int, optional): Number of variables. Defaults to None.
+        Raises:
+            TypeError: If both filePath and cubes are None
+        """
         if filePath is not None:
             self.expFromFile(filePath)
         elif cubes is not None and numVars is not None:

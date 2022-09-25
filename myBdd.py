@@ -10,8 +10,8 @@ from IPython.display import Image, display
 
 
 class BDDNode:
-    BDDNODEZEROKEY = (-1, None, None)
-    BDDNODEONEKEY = (-2, None, None)
+    BDDNODEZEROKEY = (-1, id(None), id(None))
+    BDDNODEONEKEY = (-2, id(None), id(None))
 
     def __init__(self, exp, var):
         self.exp = exp
@@ -32,7 +32,7 @@ class BDDNode:
         return BDDNode(exp, -2)
 
     def getKey(self):
-        return (self.var, self.lo, self.hi)
+        return (self.var, id(self.lo), id(self.hi))
 
     def __str__(self) -> str:
         rep = list()
@@ -130,22 +130,24 @@ def buildBDD(exp, ordering, cache):
 
     raise ValueError("invalid ordering list")
 
+# todo change key to ids
+
 
 def bddNode(exp, ordering, cache, idx):
     var = ordering[idx]
-    lo = exp.negativeCofactor(var)
-    hi = exp.positiveCofactor(var)
-    if lo.cubes == hi.cubes:
-        exp = lo
-        node = buildBDD(exp, ordering, cache)
+    nodeLo = buildBDD(exp.negativeCofactor(var), ordering, cache)
+    nodeHi = buildBDD(exp.positiveCofactor(var), ordering, cache)
+    if nodeLo is nodeHi:
+        exp = nodeLo.exp
+        node = nodeLo
     else:
-        key = (var, lo, hi)
+        key = (var, id(nodeLo), id(nodeHi))
         try:
             node = cache[key]
         except KeyError:
             node = BDDNode(exp, var)
-            node.lo = buildBDD(lo, ordering, cache)
-            node.hi = buildBDD(hi, ordering, cache)
+            node.lo = nodeLo
+            node.hi = nodeHi
             cache[key] = node
     return node
 
@@ -185,3 +187,17 @@ def _bfs(node, visited):
                 queue.appendleft(node.hi)
             visited.add(node)
             yield node
+
+
+def test():
+    exp = boolfunc.Expression("A & B | C & D")
+    ordering = ["A", "B", "C", "D"]
+    bdd = BDD(exp, ordering)
+    bdd.displayGraph()
+    print(bdd.dfsPreorder())
+    print(bdd.dfsPostorder())
+    print(bdd.bfs())
+
+
+if __name__ == "__main__":
+    test()
