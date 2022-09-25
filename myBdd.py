@@ -1,6 +1,9 @@
-
+from cProfile import label
 import collections
 from distutils.command.build import build
+from functools import cache
+from math import exp
+import random
 import weakref
 import boolfunc
 import pydot
@@ -8,13 +11,13 @@ from IPython.display import Image, display
 
 
 class BDDNode:
-    """Class for a node in a BDD."""
-    # defining the bdd one and zero nodes key
+    """ Class for a bdd node"""
+    # Defining the key for zero and one nodes
     BDDNODEZEROKEY = (-1, id(None), id(None))
     BDDNODEONEKEY = (-2, id(None), id(None))
 
     def __init__(self, exp, var):
-        # constructor for the BDDNode class
+        """ constructor for BDDNode class """
         self.exp = exp
         self.var = var
         self.lo = None
@@ -22,24 +25,24 @@ class BDDNode:
 
     @staticmethod
     def getNodeZero(numVars):
-        """Returns the node corresponding to the zero function."""
+        """ returns the zero node """
         # the var for zero node is made -1
         exp = boolfunc.Expression.getEqnZero(numVars)
         return BDDNode(exp, -1)
 
     @staticmethod
     def getNodeOne(numVars):
-        """Returns the node corresponding to the one function."""
+        """ returns the one node """
         # the var for one node is made -2
         exp = boolfunc.Expression.getEqnOne(numVars)
         return BDDNode(exp, -2)
 
     def getKey(self):
-        """Returns the key of the node."""
-        return (self.var, self.lo, self.hi)
+        """ returns the key for the node """
+        return (self.var, id(self.lo), id(self.hi))
 
     def __str__(self) -> str:
-        """Returns a string representation of the BDDNode."""
+        """ returns the string representation of the node """
         rep = list()
         rep.append(f"id:{id(self)}")
         rep.append(f"var:{self.var}")
@@ -49,130 +52,146 @@ class BDDNode:
         return "\n".join(rep)
 
     def __repr__(self) -> str:
-        """Returns a string representation of the BDDNode."""
+        """ returns the string representation of the node """
         return self.__str__()
 
     def getLabel(self):
-        """Returns the label of the node."""
-        # _label = f"var->{self.var}\nid->{id(self)}\nlo->{id(self.lo)}    hi->{id(self.hi)}"
+        """ returns the label for the node """
+        _label = f"var->{self.var}\nid->{id(self)}\nlo->{id(self.lo)}    hi->{id(self.hi)}"
+        # label is 0 if val is -1
         if self.var == -1:
             label = "0"
+        # label is 1 if val is -2
         elif self.var == -2:
             label = "1"
+        # label is the variable in expression
         else:
             label = f"X{self.var}"
         return label
 
 
 class BDD:
-    """BDD class to instantiate a BDD from an expression and an ordering."""
+    """class for BDD"""
 
     def __init__(self, exp: boolfunc.Expression, ordering: list) -> None:
-        # store the expression
+        """ constructor for BDD class """
+        # store the number of variables
         self.exp = exp
-        # store the ordering
+        # store the ordering of the variables
         self.ordering = ordering
         # node/bdd cache
         self.NODES = weakref.WeakValueDictionary()
-        # build the BDD for Zero and One
+        # get the node for zero and one
         self.BDDNODEZERO = BDDNode.getNodeZero(exp.numVars)
         self.NODES[self.BDDNODEZERO.getKey()] = self.BDDNODEZERO
         self.BDDNODEONE = BDDNode.getNodeOne(exp.numVars)
         self.NODES[self.BDDNODEONE.getKey()] = self.BDDNODEONE
-        # build the BDD
+        # build the bdd
         self.node = self.buildBDD()
 
     def displayGraph(self):
-        """Displays the BDD graph."""
+        """ displays the graph """
         img = self.getPng()
         display(img)
 
     def getPng(self):
-        """Returns the png image of the BDD."""
+        """ returns the png image of the graph """
         self.graph = pydot.Dot(graph_type="digraph")
+        # visited set for dfs to keep track of visited nodes
         visited = set()
+        # call dfs to get the nodes in post order
         BDD.dfs(self.graph, self.node, visited)
         return Image(self.graph.create_png())
 
     @staticmethod
     def dfs(graph, node, visited):
-        """Iterate through nodes in DFS post-order and build the graph using pydot."""
-        # if lo is not none build the lo node
+        """Iterate through nodes in DFS post-order."""
         if node.lo is not None:
             BDD.dfs(graph, node.lo, visited)
-        # if hi is not none build the hi node
         if node.hi is not None:
             BDD.dfs(graph, node.hi, visited)
-        # if the node is not visited
         if node not in visited:
-            # add the node to the visited set
             visited.add(node)
-            # add node zero to graph
             if node.var == -1:
                 graph.add_node(pydot.Node(node.getLabel(),
                                           style="filled", fillcolor="orange", shape='box'))
-            # add node one to graph
             elif node.var == -2:
                 graph.add_node(pydot.Node(node.getLabel(),
                                           style="filled", fillcolor="lightblue", shape='box'))
             else:
-                # add the normal node to the graph
                 graph.add_node(pydot.Node(node.getLabel(),
                                           style="filled", fillcolor="green"))
-            # add and edge from the node to the lo node
             if node.lo is not None:
                 eLo = pydot.Edge(
                     node.getLabel(), node.lo.getLabel(), color='red', style='dotted')
                 graph.add_edge(eLo)
-            # add and edge from the node to the hi node
             if node.hi is not None:
                 eHi = pydot.Edge(
                     node.getLabel(), node.hi.getLabel(), color='blue')
                 graph.add_edge(eHi)
 
     def buildBDD(self):
+        """ builds the bdd """
         return buildBDD(self.exp, self.ordering, self.NODES)
 
     def dfsPreorder(self):
+        """ returns the dfs preorder traversal of the bdd """
         visited = set()
         return _dfsPre(self.node, visited)
 
     def dfsPostorder(self):
+        """ returns the dfs postorder traversal of the bdd """
         visited = set()
         return _dfsPost(self.node, visited)
 
     def bfs(self):
+        """ returns the bfs traversal of the bdd """
         visited = set()
         return _bfs(self.node, visited)
 
 
 def buildBDD(exp, ordering, cache):
+    """ builds the bdd """
+    # if expression is false return the zero node
     if exp.isFalse():
         return cache[BDDNode.BDDNODEZEROKEY]
+    # if expression is true return the one node
     if exp.isTrue():
         return cache[BDDNode.BDDNODEONEKEY]
+    # get the variable with the highest priority
     for idx, var in enumerate(ordering):
         if exp.isPresent(var):
+            # build the node for the variable
             return bddNode(exp, ordering, cache, idx)
-
+    # if no variable is present throw an error
     raise ValueError("invalid ordering list")
 
 
 def bddNode(exp, ordering, cache, idx):
+    """ returns the bdd node """
+    # get the variable
     var = ordering[idx]
-    lo = exp.negativeCofactor(var)
-    hi = exp.positiveCofactor(var)
-    if lo.cubes == hi.cubes:
-        exp = lo
-        node = buildBDD(exp, ordering, cache)
+    # build the lo node
+    nodeLo = buildBDD(exp.negativeCofactor(var), ordering, cache)
+    # build the hi node
+    nodeHi = buildBDD(exp.positiveCofactor(var), ordering, cache)
+    # Reduction rule 1
+    # is lo is hi then return lo
+    if nodeLo is nodeHi:
+        exp = nodeLo.exp
+        node = nodeLo
     else:
-        key = (var, lo, hi)
+        # Reduction rule 2
+        # if the node is already present in the cache then return the node
+        key = (var, id(nodeLo), id(nodeHi))
         try:
             node = cache[key]
         except KeyError:
+            # create the node if no reduction is possible
             node = BDDNode(exp, var)
-            node.lo = buildBDD(lo, ordering, cache)
-            node.hi = buildBDD(hi, ordering, cache)
+            node.lo = nodeLo
+            node.hi = nodeHi
+            # store it in the cache
             cache[key] = node
     return node
 
