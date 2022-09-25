@@ -1,5 +1,10 @@
+# pcn module is used to read a file and returns a pcn data structure
+# islice used to skip the first element of the line
 from itertools import islice
+# chain used to concatenate the length of the cube and the cube itself
 from itertools import chain
+
+# read_pcn reads a file and returns a pcn data structure
 
 
 def parse(filePath):
@@ -32,19 +37,19 @@ def parse(filePath):
     """
     with open(filePath, "rb") as f:
         try:
+            # read lines from file
             lines = iter(f)
-
             numVars = int(next(lines))
             cubeCount = int(next(lines))
             cubes = [None]*cubeCount
-
+            # create the cube list from the file
             for i in range(cubeCount):
                 line = next(lines)
                 cubes[i] = tuple(islice(map(int, line.split()), 1, None))
-
             return (numVars, tuple(cubes))
 
         except Exception as error:
+            # throws an exception if the file is not a valid pcn file
             raise AssertionError("Bad pcn file {}".format(filePath)) from error
 
 
@@ -71,6 +76,7 @@ def pcn_to_str(cubes, numVars):
     Returns:
         `str`:  string representation of the pcn cube-list data structure 
     """
+    # create the string representation of the pcn data structure
     repr = list()
     numVars = str(numVars)
     repr.append(numVars)
@@ -89,5 +95,6 @@ def write_pcn(filePath, cubes):
         filePath (`str`): out dir path
         cubes (`pcn cube-list`): pcn cube-list data structure 
     """
+    # write the pcn data structure to a file
     with open(filePath, "w") as f:
         f.write(pcn_to_str(cubes))
