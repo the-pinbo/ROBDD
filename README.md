@@ -46,7 +46,7 @@ except  KeyError:
 
 > ![bdd image](https://upload.wikimedia.org/wikipedia/commons/9/91/BDD.png)
 
-The ROBDD for the same function with the variable ordering $X_1<X_2<X_3$, is shown below:
+The ROBDD for the same function with the variable ordering $X_1 \lt X_2 \lt X_3$, is shown below:
 
 ![bdd image](https://upload.wikimedia.org/wikipedia/commons/1/14/BDD_simple.svg)
 
@@ -54,11 +54,11 @@ The ROBDD for the same function with the variable ordering $X_1<X_2<X_3$, is sho
 
 ROBDD of $f(X_1,X_2,X_3,X_4,X_5,X_6,X_7,X_8) = X_1.X_2 + X_3.X_4 + X_5.X_6 + X_7.X_8$
 
-ordering : $X_1<X_2<X_3<X_4<X_5<X_6<X_7<X_8$
+ordering : $X_1\le X_2 \lt X_3 \lt X_4 \lt X_5 \lt X_6 \lt X_7 \lt X_8$
 
 ![ex1](https://upload.wikimedia.org/wikipedia/commons/4/4b/BDD_Variable_Ordering_Good.svg)
 
-ordering : $X_1<X_3<X_5<X_7<X_2<X_4<X_6<X_8$
+ordering : $X_1 \lt X_3 \lt X_5 \lt X_7 \lt X_2 \lt X_4 \lt X_6 \lt X_8$
 
 ![ex2](https://upload.wikimedia.org/wikipedia/commons/2/28/BDD_Variable_Ordering_Bad.svg)
 
@@ -70,7 +70,7 @@ Even though the above graphs are ROBDDs of the same Boolean function, the former
 
 We are using a very simple text file format for this program. Our code will read a Boolean function specified in this format. The file format looks like this:
 
-- The _first line_ of the file is a single positive `int` n: the number of variables. We number the variables starting with index 1, so if number was 3, the variables in your problem are $$X_1, X_2, X_3$$
+- The _first line_ of the file is a single positive `int` n: the number of variables. We number the variables starting with index 1, so if number was 3, the variables in your problem are $X_1, X_2, X_3$
 
 - The second line of the file is a single positive `int` m: number of cubes in this cube list. If there are 10 cubes in this file, this is a “10”.
 
@@ -78,7 +78,8 @@ We are using a very simple text file format for this program. Our code will read
 
 _Example :_
 
-Suppose we have a function $F = X_1.X_2 + X_2.X_3 + X_3.X_1$
+Suppose we have a function
+$$f = X_1.X_2 + X_2.X_3 + X_3.X_1$$
 
 ```
 3
@@ -92,7 +93,7 @@ Suppose we have a function $F = X_1.X_2 + X_2.X_3 + X_3.X_1$
 ## Setup
 
 `https://github.com/the-pinbo/ROBDD`
-Simply clone this git hub repo and run `test.ipynb ` with appropriate pcn files an input form the `./input` directory , further instructions and examples are given there, also make sure to install the dependencies.
+Simply clone this git hub repo and run `example.ipynb ` with appropriate pcn files an input form the `./input` directory , further instructions and examples are given there, also make sure to install the dependencies.
 
 > To install the dependencies type the following in the terminal
 >
