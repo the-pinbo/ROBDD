@@ -87,20 +87,20 @@ class BDD:
             visited.add(node)
             if node.var == -1:
                 graph.add_node(pydot.Node(node.getLabel(),
-                                          style="filled", fillcolor="red", shape='box'))
+                                          style="filled", fillcolor="orange", shape='box'))
             elif node.var == -2:
                 graph.add_node(pydot.Node(node.getLabel(),
-                                          style="filled", fillcolor="blue", shape='box'))
+                                          style="filled", fillcolor="lightblue", shape='box'))
             else:
                 graph.add_node(pydot.Node(node.getLabel(),
-                                          style="filled", fillcolor="yellow"))
+                                          style="filled", fillcolor="green"))
             if node.lo is not None:
                 eLo = pydot.Edge(
                     node.getLabel(), node.lo.getLabel(), color='red', style='dotted')
                 graph.add_edge(eLo)
             if node.hi is not None:
                 eHi = pydot.Edge(
-                    node.getLabel(), node.hi.getLabel(), color='blue', style='dotted')
+                    node.getLabel(), node.hi.getLabel(), color='blue')
                 graph.add_edge(eHi)
 
     def buildBDD(self):
