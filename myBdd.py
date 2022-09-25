@@ -55,9 +55,14 @@ class BDDNode:
         """ returns the string representation of the node """
         return self.__str__()
 
+    def _getUid(self):
+        """returns the UID for a node"""
+        uid = f"var->{self.var}\nid->{id(self)}\nlo->{id(self.lo)}    hi->{id(self.hi)}"
+        return uid
+
     def getLabel(self):
         """ returns the label for the node """
-        _label = f"var->{self.var}\nid->{id(self)}\nlo->{id(self.lo)}    hi->{id(self.hi)}"
+
         # label is 0 if val is -1
         if self.var == -1:
             label = "0"
@@ -113,21 +118,21 @@ class BDD:
         if node not in visited:
             visited.add(node)
             if node.var == -1:
-                graph.add_node(pydot.Node(node.getLabel(),
+                graph.add_node(pydot.Node(node._getUid(),
                                           style="filled", fillcolor="orange", shape='box'))
             elif node.var == -2:
-                graph.add_node(pydot.Node(node.getLabel(),
+                graph.add_node(pydot.Node(node._getUid(),
                                           style="filled", fillcolor="lightblue", shape='box'))
             else:
-                graph.add_node(pydot.Node(node.getLabel(),
+                graph.add_node(pydot.Node(node._getUid(),
                                           style="filled", fillcolor="green"))
             if node.lo is not None:
                 eLo = pydot.Edge(
-                    node.getLabel(), node.lo.getLabel(), color='red', style='dotted')
+                    node._getUid(), node.lo._getUid(), color='red', style='dotted')
                 graph.add_edge(eLo)
             if node.hi is not None:
                 eHi = pydot.Edge(
-                    node.getLabel(), node.hi.getLabel(), color='blue')
+                    node._getUid(), node.hi._getUid(), color='blue')
                 graph.add_edge(eHi)
 
     def buildBDD(self):
