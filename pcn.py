@@ -74,9 +74,9 @@ def pcn_to_str(cubes, numVars):
     repr = list()
     numVars = str(numVars)
     repr.append(numVars)
+    cubes = tuple(set(tuple(sorted(cube, key=abs)) for cube in cubes))
     numCubes = str(len(cubes))
     repr.append(numCubes)
-    cubes = tuple(set(tuple(sorted(cube, key=abs)) for cube in cubes))
     for cube in cubes:
         repr.append(' '.join(map(str, chain((len(cube),), cube))))
     return "\n".join(repr)
