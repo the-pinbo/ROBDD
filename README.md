@@ -58,7 +58,7 @@ The ROBDD for the same function with the variable ordering $X_1 \lt X_2 \lt X_3$
 
 ROBDD of $f(X_1,X_2,X_3,X_4,X_5,X_6,X_7,X_8) = X_1.X_2 + X_3.X_4 + X_5.X_6 + X_7.X_8$
 
-ordering : $X_1\lt X_2 \lt X_3 \lt X_4 \lt X_5 \lt X_6 \lt X_7 \lt X_8$
+Ordering : $X_1\lt X_2 \lt X_3 \lt X_4 \lt X_5 \lt X_6 \lt X_7 \lt X_8$
 
 ![ex1](https://upload.wikimedia.org/wikipedia/commons/4/4b/BDD_Variable_Ordering_Good.svg)
 
@@ -92,6 +92,96 @@ $$f = X_1.X_2 + X_2.X_3 + X_3.X_1$$
 2 2 3
 2 1 3
 
+```
+
+## Implementation
+
+BDD if-then-else **(ITE)** operator. The ITE operator is the most important operation in BDDs. It is used to construct BDDs from other BDDs.
+The _f_, _g_, and _h_ arguments are BDDs.
+The ITE(f, g, h) operator means
+if _f_ is true, return _g_, else return _h_".It is equivalent to:
+
+- DNF form: `f & g | ~f & h`
+- CNF form: `(~f | g) & (f | h)`
+  The ITE operator is defined as follows:
+
+```python
+"""Return node that results from recursively applying ITE(f, g, h)."""
+    # ITE(f, 1, 0) = f
+    if g is BDDNODEONE and h is BDDNODEZERO:
+        return f
+    # ITE(f, 0, 1) = f'
+    elif g is BDDNODEZERO and h is BDDNODEONE:
+        return _neg(f)
+    # ITE(1, g, h) = g
+    elif f is BDDNODEONE:
+        return g
+    # ITE(0, g, h) = h
+    elif f is BDDNODEZERO:
+        return h
+    # ITE(f, g, g) = g
+    elif g is h:
+        return g
+    else:
+        # ITE(f, g, h) = ITE(x, ITE(fx, gx, hx), ITE(fx', gx', hx'))
+        # where x is the variable of f with the lowest index
+        return bddnode(root, ite(fv1, gv1, hv1), ite(fv0, gv0, hv0))
+```
+
+We build the bdd nodes using the shannon's expansion theorem in a bottom up post order manner to avoid recomputation and to reduce the number of nodes in the bdd. The bdd is built using the following steps:
+
+```python
+# build the bdd
+        self.node = self.buildBDD()
+```
+
+```python
+def buildBDD(exp, ordering, cache):
+    """ builds the bdd """
+    # if expression is false return the zero node
+    if exp.isFalse():
+        return cache[BDDNode.BDDNODEZEROKEY]
+    # if expression is true return the one node
+    if exp.isTrue():
+        return cache[BDDNode.BDDNODEONEKEY]
+    # get the variable with the highest priority
+    for idx, var in enumerate(ordering):
+        if exp.isPresent(var):
+            # build the node for the variable
+            return bddNode(exp, ordering, cache, idx)
+    # if no variable is present throw an error
+    raise ValueError("invalid ordering list")
+
+```
+
+```python
+def bddNode(exp, ordering, cache, idx):
+    """ returns the bdd node """
+    # get the variable
+    var = ordering[idx]
+    # build the lo node
+    nodeLo = buildBDD(exp.negativeCofactor(var), ordering, cache)
+    # build the hi node
+    nodeHi = buildBDD(exp.positiveCofactor(var), ordering, cache)
+    # Reduction rule 1
+    # is lo is hi then return lo
+    if nodeLo is nodeHi:
+        exp = nodeLo.exp
+        node = nodeLo
+    else:
+        # Reduction rule 2
+        # if the node is already present in the cache then return the node
+        key = (var, id(nodeLo), id(nodeHi))
+        try:
+            node = cache[key]
+        except KeyError:
+            # create the node if no reduction is possible
+            node = BDDNode(exp, var)
+            node.lo = nodeLo
+            node.hi = nodeHi
+            # store it in the cache
+            cache[key] = node
+    return node
 ```
 
 ## Setup
@@ -166,7 +256,7 @@ a.displayGraph()
 ![](./img/76ad986ba190202e53fe3f97f6db2e684074c3f5.png)
 
 The following cells display the BDDs for variable orderings of the Boolean function
-$$ X_1 \lt X_2 \lt X_3 \lt X_4 $$
+$$X_1 \lt X_2 \lt X_3 \lt X_4$$
 
 ```python
 ordering = [1,2,3,4]
