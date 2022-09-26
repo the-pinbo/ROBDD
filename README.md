@@ -1,6 +1,14 @@
 # Implementation of ROBDD
 
 > Implementation of ROBDD using python3 visualizing it using graphviz and pydot
+>
+> ## Submitted by :
+>
+> ### 1. Inbasekaran P (201EC226)
+>
+> ### 2. Pranav Koundinya (201EC247)
+>
+> ### 3. Trivendra Tiwari 201EC163)
 
 ## Introduction:
 
@@ -13,14 +21,11 @@ Two reduction rules exist for converting an OBDD into a ROBDD:
 ```python
 
 # Reduction rule 1
-
 # is lo is hi then return lo
 
 if nodeLo is nodeHi:
-
-exp = nodeLo.exp
-
-node = nodeLo
+    exp = nodeLo.exp
+    node = nodeLo
 
 ```
 
@@ -29,20 +34,19 @@ node = nodeLo
 ```python
 
 # Reduction rule 2
-
 # if the node is already present in the cache then return the node
 
 key = (var, id(nodeLo), id(nodeHi))
 
 try:
-
-node = cache[key]
-
+    node = cache[key]
 except  KeyError:
-
+    node = Node(var, nodeLo, nodeHi)
+    cache[key] = node
 ```
 
-> Ex: The BDD for the Boolean function $f(X_1,X_2,X_3)= X_1 . \bar X_2 . \bar X_3+ X_1.X_2 + X_2.X_3$ is shown below:
+> Example: The BDD for the Boolean function
+> $$f(X_1,X_2,X_3)= X_1 . \bar X_2 . \bar X_3+ X_1.X_2 + X_2.X_3$$
 
 > ![bdd image](https://upload.wikimedia.org/wikipedia/commons/9/91/BDD.png)
 
@@ -54,7 +58,7 @@ The ROBDD for the same function with the variable ordering $X_1 \lt X_2 \lt X_3$
 
 ROBDD of $f(X_1,X_2,X_3,X_4,X_5,X_6,X_7,X_8) = X_1.X_2 + X_3.X_4 + X_5.X_6 + X_7.X_8$
 
-ordering : $X_1\le X_2 \lt X_3 \lt X_4 \lt X_5 \lt X_6 \lt X_7 \lt X_8$
+ordering : $X_1\lt X_2 \lt X_3 \lt X_4 \lt X_5 \lt X_6 \lt X_7 \lt X_8$
 
 ![ex1](https://upload.wikimedia.org/wikipedia/commons/4/4b/BDD_Variable_Ordering_Good.svg)
 
@@ -98,3 +102,157 @@ Simply clone this git hub repo and run `example.ipynb ` with appropriate pcn fil
 > To install the dependencies type the following in the terminal
 >
 > `$ pip install -r requirements.txt`
+
+## Example 1
+
+### Steps
+
+#### **Step 1**
+
+import myBdd module
+
+```py
+from myBdd import *
+```
+
+#### **Step 2**
+
+Read the .pcn file and create an instance of `Expression()`
+
+Boolean Function:
+$$f(X_1, X_2, X_3) = X_1.X_2.X_3 +\overline{X_3}.X_4 + \overline{X_2}.X_4$$
+
+```py
+f = boolfunc.Expression(r"input\1.pcn")
+print(f)
+```
+
+> Output:
+
+```
+    4
+    3
+    3 1 2 3
+    2 -2 4
+    2 -3 4
+```
+
+#### **Step 3**
+
+Input the ordering of the variabes as a list and create an instance of `BDD()`
+
+```py
+ordering = [2,3,4,1]
+print(ordering)
+a = BDD(f, ordering)
+a
+
+```
+
+> Output:
+
+```output
+[2, 3, 4, 1]
+```
+
+#### **Step 4**
+
+Display the DAG using the `.displayGraph()` method
+
+```py
+a.displayGraph()
+```
+
+![](./img/76ad986ba190202e53fe3f97f6db2e684074c3f5.png)
+
+The following cells display the BDDs for variable orderings of the Boolean function
+$$ X_1 \lt X_2 \lt X_3 \lt X_4 $$
+
+```python
+ordering = [1,2,3,4]
+print(ordering)
+a = BDD(f, ordering)
+a.displayGraph()
+```
+
+> Output:
+
+```
+[1, 2, 3, 4]
+```
+
+![](./img/64d48c6de6c6a2fbe9d2beffbc23d7ca22988267.png)
+
+$$ X_2 \lt X_3 \lt X_1 < X_4 $$
+
+```py
+ordering = [2, 3, 1, 4]
+print(ordering)
+a = BDD(f, ordering)
+a.displayGraph()
+```
+
+> Output:
+
+```
+[2, 3, 1, 4]
+```
+
+![](./img/e003caf16b860b0c6162480f7437355ab6eb5f3f.png)
+
+## Example 2
+
+Boolean Function:
+$$f(X_1, X_2,, X_8) = X_1.X_2 + X3.X_4 + X_5.X_6 + X_7.X_8$$
+
+Variable Orderings:
+
+1.  $X_1 \lt X_3 \lt X_5 \lt X_7 \lt X_2 \lt X_4 \lt X_6 \lt X_8$
+2.  $X_1 \lt X_2 \lt X_3 \lt X_4 \lt X_5 \lt X_6 \lt X_7 \lt X_8$
+    :::
+
+```python
+f = boolfunc.Expression(r"input\2.pcn")
+print(f)
+```
+
+> Output
+
+```
+8
+4
+2 1 2
+2 7 8
+2 3 4
+2 5 6
+```
+
+```python
+ordering = [1,3,5,7,2,4,6,8]
+print(ordering)
+a = BDD(f, ordering)
+a.displayGraph()
+```
+
+> Output
+
+```
+[1, 3, 5, 7, 2, 4, 6, 8]
+```
+
+![](./img/676733707e51d12539e617326a016f978d4f64ca.png)
+
+```python
+ordering = [1,2,3,4,5,6,7,8]
+print(ordering)
+a = BDD(f, ordering)
+a.displayGraph()
+```
+
+> Output
+
+```
+[1, 2, 3, 4, 5, 6, 7, 8]
+```
+
+![](./img/83e9644d0b5af21facd01a6c8c78971f9a765b9b.png)
