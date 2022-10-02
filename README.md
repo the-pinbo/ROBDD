@@ -347,14 +347,12 @@ a.displayGraph()
 
 ![](./img/83e9644d0b5af21facd01a6c8c78971f9a765b9b.png)
 
-
-
 ## Example 3
 
-For this example, we shall Boolean function in which the top variable is redundant, and we shall verify that the root node that is obtained in the OBDD is eliminated in the final ROBDD. 
+For this example, we shall see a Boolean function in which the top variable is redundant, and we shall verify that the root node that is obtained in the OBDD is eliminated in the final ROBDD.
 
 Boolean Function:
-$$ f(X_1, X_2, X_3) = X_1.X_2.X_3 + X_2.X_3 + \overline{X_1}.X_2.X_3 $$
+$$f(X_1, X_2, X_3) = X_1.X_2.X_3 + X_2.X_3 + \overline{X_1}.X_2.X_3$$
 
 Variable Ordering:
 
@@ -365,7 +363,9 @@ f = boolfunc.Expression(
     r"input\3.pcn")
 print(f)
 ```
+
 > Output
+
 ```
 3
 3
@@ -380,16 +380,15 @@ print(ordering)
 a = BDD(f, ordering)
 a.display_Graph()
 ```
+
 > Output
 
 ```
 [1, 2, 3]
 ```
-```
+
 ![](./img/b086d0e0-0176-48b7-8a35-45ad2e195056.png)
-```
 
 We see that the root node(i.e variable $X_1$) is eliminated. The simplified boolean expression represented by the ROBDD is
-$$ f(X_1, X_2, X_3) = X_2.X_3 $$
 
-
+$$f(X_1, X_2, X_3) = X_2.X_3$$
