@@ -8,6 +8,8 @@ import weakref
 import boolfunc
 import pydot
 from IPython.display import Image, display
+import urp
+import pcn
 
 
 class BDDNode:
@@ -108,6 +110,12 @@ class BDD:
         BDD.dfs(self.graph, self.node, visited)
         return Image(self.graph.create_png())
 
+    def getExpression(self):
+        """ returns the expression of the bdd """
+        vis = set()
+        cubes = getExpression(self.node, vis)
+        return boolfunc.Expression(cubes=cubes, numVars=self.exp.numVars)
+
     @staticmethod
     def dfs(graph, node, visited):
         """Iterate through nodes in DFS post-order."""
@@ -199,6 +207,24 @@ def bddNode(exp, ordering, cache, idx):
             # store it in the cache
             cache[key] = node
     return node
+
+
+def getExpression(node: BDDNode, vis: set):
+    if node.getKey() == BDDNode.BDDNODEZEROKEY:
+        return ()
+    if node.getKey() == BDDNode.BDDNODEONEKEY:
+        return ((),)
+    vis.add(node)
+    cubes = list()
+    if node.lo and node.lo not in vis:
+        loList = getExpression(node.lo, vis)
+        for cube in loList:
+            cubes.insert(0, (-node.var, *cube))
+    if node.hi and node.hi not in vis:
+        hiList = getExpression(node.hi, vis)
+        for cube in hiList:
+            cubes.insert(0, (node.var, *cube))
+    return tuple(set(cubes))
 
 
 def _dfsPre(node, visited):
